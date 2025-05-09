@@ -1,6 +1,7 @@
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import 	Animated,
 		{ 	useSharedValue,
 			useAnimatedStyle,
@@ -87,8 +88,6 @@ const TodoItem = ({	item,
 			opacityComplete.value = withTiming(0, { duration: 150 });
 		});
 
-
-
 	useEffect(() => {
 		Animat.timing(bgcValue, {
 			toValue: item.status ? 1 : 0,
@@ -143,6 +142,30 @@ const TodoList = () => {
 				}
 			]);
 
+	const saveData = async (listBox: allList[]) => {
+			try {
+				await AsyncStorage.setItem('todolist', JSON.stringify(listBox));
+				console.log('SAVE !!');
+				const aa = await AsyncStorage.getItem('todolist');
+				console.log(aa);
+				getData();
+			}
+			catch(err) {
+				console.log(err);
+			};
+		},
+		getData = async ():Promise<allList[] | null> => {
+			try {
+				const jsonValue = await AsyncStorage.getItem('todoList');
+				console.log(jsonValue);
+
+      			return jsonValue != null ? JSON.parse(jsonValue) : null;
+			}
+			catch(err) {
+				return null
+			};
+		};
+
 	const renderItem = ({ item }: { item: allList }) => {
 			return (
 				<GestureHandlerRootView>
@@ -171,6 +194,16 @@ const TodoList = () => {
 		},
 		deleteTodoList = (id: string) => setListBox(listBox.filter(e => e.id !== id)),
 		changeStatus = (id: string) => setListBox(listBox.map(e => e.id === id ? { ...e, status: !e.status } : e));
+
+
+
+
+
+
+		useEffect(() => {
+			saveData(listBox)
+		}, [listBox])
+
 
 	return (
 		<>
