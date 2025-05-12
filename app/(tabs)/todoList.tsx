@@ -129,26 +129,11 @@ const TodoItem = ({	item,
 const TodoList = () => {
 	const 	[ openInput, setOpenInput ] = useState<Boolean>(false),
 			[ inputValue, setInputValue ] = useState<string>(''),
-			[ listBox, setListBox ] = useState<allList[]>([
-				{
-					id: '001',
-					title: '必做之事-1',
-					status: false
-				},
-				{
-					id: '002',
-					title: '非必做之事',
-					status: true
-				}
-			]);
+			[ listBox, setListBox ] = useState<allList[]>([]);
 
 	const saveData = async (listBox: allList[]) => {
 			try {
 				await AsyncStorage.setItem('todolist', JSON.stringify(listBox));
-				console.log('SAVE !!');
-				const aa = await AsyncStorage.getItem('todolist');
-				console.log(aa);
-				getData();
 			}
 			catch(err) {
 				console.log(err);
@@ -156,10 +141,10 @@ const TodoList = () => {
 		},
 		getData = async ():Promise<allList[] | null> => {
 			try {
-				const jsonValue = await AsyncStorage.getItem('todoList');
-				console.log(jsonValue);
+				const jsonValue = await AsyncStorage.getItem('todolist');
+				console.log('jsonValue',jsonValue);
 
-      			return jsonValue != null ? JSON.parse(jsonValue) : null;
+				return jsonValue !== null ? JSON.parse(jsonValue) : null;
 			}
 			catch(err) {
 				return null
@@ -181,7 +166,7 @@ const TodoList = () => {
 			setOpenInput(false);
 			setInputValue('');
 		},
-		submitTodoList = () => {
+		submitTodoList = async () => {
 			setListBox([
 				{
 					id: uuidv4(),
@@ -197,12 +182,19 @@ const TodoList = () => {
 
 
 
-
-
-
+		useEffect(() => {
+			const getStorage = async () => {
+				const getStorageData = await getData();
+				console.log('get', getStorageData);
+				if(getStorageData)
+					setListBox(getStorageData);
+			};
+			getStorage();
+		}, []);
+		
 		useEffect(() => {
 			saveData(listBox)
-		}, [listBox])
+		}, [ listBox ]);
 
 
 	return (
